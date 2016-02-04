@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using USIToolbarWrapper;
 using Random = System.Random;
 
 namespace LifeSupport 
@@ -14,6 +15,7 @@ namespace LifeSupport
     public class LifeSupportMonitor : MonoBehaviour
     {
         private ApplicationLauncherButton orbLogButton;
+        private IButton orbLogTButton;
         private Rect _windowPosition = new Rect(300, 60, 600, 400);
         private GUIStyle _windowStyle;
         private GUIStyle _labelStyle;
@@ -21,15 +23,27 @@ namespace LifeSupport
         private GUIStyle _scrollStyle;
         private Vector2 scrollPos = Vector2.zero;
         private bool _hasInitStyles = false;
+        private bool windowVisible;
 
         void Awake()
         {
-            var texture = new Texture2D(36, 36, TextureFormat.RGBA32, false);
-            var textureFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Supplies.png");
-            print("Loading " + textureFile);
-            texture.LoadImage(File.ReadAllBytes(textureFile));
-            this.orbLogButton = ApplicationLauncher.Instance.AddModApplication(GuiOn, GuiOff, null, null, null, null,
-                ApplicationLauncher.AppScenes.ALWAYS, texture);
+            if (ToolbarManager.ToolbarAvailable)
+            {
+                this.orbLogTButton = ToolbarManager.Instance.add("USILS", "orbLog");
+                orbLogTButton.TexturePath = "UmbraSpaceIndustries/LifeSupport/Supplies24";
+                orbLogTButton.ToolTip = "USI Life Support";
+                orbLogTButton.Enabled = true;
+                orbLogTButton.OnClick += (e) => { if(windowVisible) { GuiOff(); windowVisible = false; } else { GuiOn(); windowVisible = true; } };
+            }
+            else
+            {
+                var textureFile = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "Supplies.png");
+                var texture = new Texture2D(36, 36, TextureFormat.RGBA32, false);
+                print("Loading " + textureFile);
+                texture.LoadImage(File.ReadAllBytes(textureFile));
+                this.orbLogButton = ApplicationLauncher.Instance.AddModApplication(GuiOn, GuiOff, null, null, null, null,
+                    ApplicationLauncher.AppScenes.ALWAYS, texture);
+            }
         }
 
         private void GuiOn()
@@ -296,10 +310,16 @@ namespace LifeSupport
 
         internal void OnDestroy()
         {
-            if (orbLogButton == null)
-                return;
-            ApplicationLauncher.Instance.RemoveModApplication(orbLogButton);
-            orbLogButton = null;
+            if (orbLogButton != null)
+            {
+                ApplicationLauncher.Instance.RemoveModApplication(orbLogButton);
+                orbLogButton = null;
+            }
+            if (orbLogTButton != null)
+            {
+                orbLogTButton.Destroy();
+                orbLogTButton = null;
+            }
         }
 
         private void InitStyles()

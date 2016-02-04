@@ -57,6 +57,7 @@
     <Compile Include="LIfeSupportScenario.cs" />
     <Compile Include="LifeSupportSetup.cs" />
     <Compile Include="LifeSupportStatus.cs" />
+    <Compile Include="ToolbarWrapper.cs" />
     <Compile Include="VesselSupplyStatus.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
